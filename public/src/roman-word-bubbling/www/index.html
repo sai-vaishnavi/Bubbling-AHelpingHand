@@ -1,0 +1,448 @@
+<head>
+  <title>Roman Word Bubbling</title>
+  <meta charset="UTF-8" />
+  <meta name="google" content="notranslate" />
+  <meta http-equiv="Content-Language" content="en" />
+  <link
+    rel="stylesheet"
+    href="third_party/mdc/material-components-web.min.css"
+  />
+  <Link rel="stylesheet" href="css/main.css" />
+  <Link
+    rel="stylesheet"
+    href="css/stylesheet_apompadour.css?family=apompadour_custom"
+  />
+  <link
+    rel="preload"
+    href="webfonts/apompadour_custom/apompadour_custom-webfont.woff2"
+    as="font"
+  />
+  <link rel="manifest" href="site.webmanifest" />
+  <link
+    href="https://fonts.googleapis.com/css?family=Roboto"
+    rel="stylesheet"
+  />
+  <link rel="icon" type="image/png" href="favicon.ico" />
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script
+    async
+    src="https://www.googletagmanager.com/gtag/js?id=UA-140382909-1"
+  ></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+
+    gtag("config", "UA-140382909-1");
+  </script>
+</head>
+<body>
+  <div class="loader">
+    <svg
+      class="spinner"
+      width="65px"
+      height="65px"
+      viewBox="0 0 66 66"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle
+        class="path"
+        fill="none"
+        stroke-width="6"
+        stroke-linecap="round"
+        cx="33"
+        cy="33"
+        r="30"
+      ></circle>
+    </svg>
+  </div>
+  <div
+    class="mdc-dialog"
+    id="info-dialog"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="info-dialog-title"
+    aria-describedby="info-dialog-content"
+  >
+    <div class="mdc-dialog__container">
+      <div class="mdc-dialog__surface">
+        <img src="img/logo.png" />
+        <!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
+        <h2 class="mdc-dialog__title" id="info-dialog-title">
+          <!--
+     -->Roman Word Bubbling Tool<!--
+   -->
+        </h2>
+        <div class="mdc-dialog__content" id="info-dialog-content">
+          <p>
+            This tool is designed to assist in literacy education for students
+            with CVI. It is being developed in cooperation with Dr. Christine
+            Roman-Lantzy who originally developed the technique.
+          </p>
+          <p>
+            Disclaimer: This is not an official Google Product.
+          </p>
+          <p>
+            Version 1.1.0
+          </p>
+          <p>
+            This application uses the following open source projects:
+            <br /><a href="https://opencv.org">OpenCV</a> (<a
+              href="third_party/OpenCV/LICENSE"
+              >License</a
+            >)
+            <br /><a href="third_party/fontdetect.js">
+              fontdetect by Lalit Patil </a>(<a
+              href="http://www.apache.org/licenses/LICENSE-2.0"
+              >License</a
+            >)
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="mdc-dialog__scrim"></div>
+  </div>
+  <div
+    class="mdc-dialog"
+    id="help-dialog"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="help-dialog-title"
+    aria-describedby="help-dialog-content"
+  >
+    <div class="mdc-dialog__container">
+      <div class="mdc-dialog__surface">
+        <!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
+        <h2 class="mdc-dialog__title" id="help-dialog-title">
+          <!--
+     -->Help<!--
+   -->
+        </h2>
+        <div class="mdc-dialog__content" id="help-dialog-content">
+          <p>
+            This tool is intended to reduce visual complexity by emphasising the
+            shape of the entire word instead of individual letters. Type words
+            in the Text field and the tool will draw a tight, brightly-colored
+            bubble around it.
+          </p>
+
+          <p>
+            The defaults were carefully chosen to work for most students. If
+            your student attunes to a different color or font, you can change
+            those in the Edit window. If anything is not working well or you
+            have suggestions, click the feedback button and let us know.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="mdc-dialog__scrim"></div>
+  </div>
+  <div
+    class="mdc-dialog"
+    id="feedback-dialog"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="feedback-dialog-title"
+    aria-describedby="feedback-dialog-content"
+  >
+    <div class="mdc-dialog__container">
+      <div class="mdc-dialog__surface">
+        <!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
+        <h2 class="mdc-dialog__title" id="feedback-dialog-title">
+          <!--
+     -->Send Feedback<!--
+   -->
+        </h2>
+        <div class="feedback-error hidden">Dialogue cannot be left empty.</div>
+        <div class="mdc-dialog__content" id="feedback-dialog-content">
+          <br /><input
+            type="text"
+            id="feedbackTitle"
+            placeholder="Title (optional)"
+          />
+          <br /><input
+            type="text"
+            id="feedbackEmail"
+            placeholder="Email (optional, if you want to be notified about your feedback)"
+          />
+          <br /><textarea
+            id="feedbackDescription"
+            placeholder="Description. If this is a bug report, please include as much information as possible."
+          ></textarea>
+          <br /><input
+            type="button"
+            id="feedbackSubmit"
+            value="Send"
+            onclick="submitFeedback()"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="mdc-dialog__scrim"></div>
+  </div>
+  <div class="feedback-snackbar">
+    <span>Feedback sent successfully.</span
+    ><span class="feedback-snackbar-close">DISMISS</span>
+  </div>
+  <main>
+    <div class="canvas-container">
+      <div class="controls" align="right">
+        <div><a class="info">i</a><span class="tooltip">Info</span></div>
+        <div><a class="help">?</a><span class="tooltip">Help</span></div>
+        <div>
+          <a class="feedback"
+            ><svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path
+                d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"
+              /></svg></a
+          ><span class="tooltip">Feedback</span>
+        </div>
+        <a class="edit">Edit</a>
+      </div>
+      <span
+        id="loadingBackground"
+        class="font_preload_hack_for_browsers_that_do_not_support_rel_preload"
+      >
+        This page may take a minute or two to load. <br />
+        If it fails to load, email romanwordbubbling (at gmail.com) <br />
+        You can also access the old version at: <br />
+        https://roman-word-bubbling-stable.appspot.com/
+      </span>
+      <canvas id="textCanvas" width="400" height="200" hidden="true"></canvas>
+      <img id="output"></img>
+    </div>
+    <br /><br />
+    <div class="mdc-drawer__container">
+      <aside class="mdc-drawer" style="transition:.3s">
+        <div class="mdc-drawer__header">
+          <span>Edit</span><span class="close">&times;</span>
+        </div>
+        <div class="mdc-drawer__content">
+          <div class="input-container">
+            <div class="input">
+              <div class="label">Text</div>
+              <div
+                class="mdc-text-field mdc-text-field--outlined mdc-text-field--no-label"
+              >
+              <textarea
+                rows=2
+                class="mdc-text-field__input"
+                aria-label="Text"
+                id="textInput"
+                name="words"
+              >Roman&#013;&#010;Word&#013;&#010;Bubbling</textarea>
+                <div class="mdc-notched-outline">
+                  <div class="mdc-notched-outline__leading"></div>
+                  <div class="mdc-notched-outline__trailing"></div>
+                </div>
+              </div>
+            </div>
+            <div class="input">
+              <div class="label">Font</div>
+              <div class="mdc-select mdc-select--outlined">
+                <select
+                  class="mdc-select__native-control"
+                  id="fontChooser"
+                  onchange="updateFont()"
+                >
+                  <option value="apompadour_custom">A Pompadour</option>
+                  <option value="Roboto">Roboto</option>
+                  <option value="custom">Custom...</option>
+                </select>
+                <div class="mdc-notched-outline"></div>
+              </div>
+              <input
+                type="file"
+                id="fontFile"
+                accept=".ttf"
+                hidden="true"
+                oninput="loadCustomFont()"
+              />
+            </div>
+            <div class="input">
+              <div class="label slider">Font size</div>
+              <div class="slider-container">
+                <div
+                  class="mdc-slider"
+                  id="fontSize"
+                  tabindex="0"
+                  role="slider"
+                  aria-valuemin="16"
+                  aria-valuemax="300"
+                  aria-valuenow="70"
+                  aria-label="Select Value"
+                  data-value="70"
+                >
+                  <div class="mdc-slider__track-container">
+                    <div class="mdc-slider__track"></div>
+                  </div>
+                  <div class="mdc-slider__thumb-container">
+                    <svg class="mdc-slider__thumb" width="21" height="21">
+                      <circle cx="10.5" cy="10.5" r="7.875"></circle>
+                    </svg>
+                    <div class="mdc-slider__focus-ring"></div>
+                  </div>
+                </div>
+                <input class="slider-manual-input" type="number" />
+              </div>
+            </div>
+            <div class="input checkbox">
+              <div class="mdc-checkbox">
+                <input
+                  type="checkbox"
+                  class="mdc-checkbox__native-control"
+                  id="removeText"
+                  type="checkbox"
+                  name="remove text"
+                  onclick="renderImage()"
+                />
+                <div class="mdc-checkbox__background">
+                  <svg class="mdc-checkbox__checkmark" viewBox="0 0 24 24">
+                    <path
+                      class="mdc-checkbox__checkmark-path"
+                      fill="none"
+                      d="M1.73,12.91 8.1,19.28 22.79,4.59"
+                    />
+                  </svg>
+                  <div class="mdc-checkbox__mixedmark"></div>
+                </div>
+              </div>
+              <div class="label">Hide text</div>
+            </div>
+          </div>
+          <div class="input-container">
+            <div class="input">
+              <div class="label">Outline color</div>
+              <div class="colorOptions">
+                <div
+                  class="color selected"
+                  style="background-color:#ff0000;color:white"
+                ></div>
+                <div
+                  class="color"
+                  style="background-color:#ff8000;color:white"
+                ></div>
+                <div
+                  class="color"
+                  style="background-color:#ffff00;color:black"
+                ></div>
+                <div
+                  class="color"
+                  style="background-color:#00ff00;color:black"
+                ></div>
+                <div
+                  class="color"
+                  style="background-color:#00ffff;color:black"
+                ></div>
+                <div
+                  class="color"
+                  style="background-color:#0000ff;color:white"
+                ></div>
+                <div
+                  class="color"
+                  style="background-color:#800080;color:white"
+                ></div>
+                <div
+                  class="color"
+                  style="background-color:#ff00ff;color:white"
+                ></div>
+              </div>
+            </div>
+            <div class="input checkbox">
+              <div class="mdc-checkbox">
+                <input
+                  type="checkbox"
+                  class="mdc-checkbox__native-control"
+                  id="darkMode"
+                  type="checkbox"
+                  name="dark mode"
+                  onclick="renderImage()"
+                />
+                <div class="mdc-checkbox__background">
+                  <svg class="mdc-checkbox__checkmark" viewBox="0 0 24 24">
+                    <path
+                      class="mdc-checkbox__checkmark-path"
+                      fill="none"
+                      d="M1.73,12.91 8.1,19.28 22.79,4.59"
+                    />
+                  </svg>
+                  <div class="mdc-checkbox__mixedmark"></div>
+                </div>
+              </div>
+              <div class="label">Dark background</div>
+            </div>
+          </div>
+          <div class="input-container">
+            <div class="input">
+              <div class="label slider">Outline width</div>
+              <div class="slider-container">
+                <div
+                  class="mdc-slider"
+                  id="outlineThickness"
+                  tabindex="0"
+                  role="slider"
+                  aria-valuemin="1"
+                  aria-valuemax="20"
+                  aria-valuenow="9"
+                  aria-label="Select Value"
+                  data-value="9"
+                >
+                  <div class="mdc-slider__track-container">
+                    <div class="mdc-slider__track"></div>
+                  </div>
+                  <div class="mdc-slider__thumb-container">
+                    <svg class="mdc-slider__thumb" width="21" height="21">
+                      <circle cx="10.5" cy="10.5" r="7.875"></circle>
+                    </svg>
+                    <div class="mdc-slider__focus-ring"></div>
+                  </div>
+                </div>
+                <input class="slider-manual-input" type="number" />
+              </div>
+            </div>
+            <div class="input">
+              <div class="label slider">Gap width</div>
+              <div class="slider-container">
+                <div
+                  class="mdc-slider"
+                  id="gapWidth"
+                  tabindex="0"
+                  role="slider"
+                  aria-valuemin="0"
+                  aria-valuemax="50"
+                  aria-valuenow="11"
+                  aria-label="Select Value"
+                  data-value="11"
+                >
+                  <div class="mdc-slider__track-container">
+                    <div class="mdc-slider__track"></div>
+                  </div>
+                  <div class="mdc-slider__thumb-container">
+                    <svg class="mdc-slider__thumb" width="21" height="21">
+                      <circle cx="10.5" cy="10.5" r="7.875"></circle>
+                    </svg>
+                    <div class="mdc-slider__focus-ring"></div>
+                  </div>
+                </div>
+                <input class="slider-manual-input" type="number" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="third_party/mdc/material-components-web.min.js"></script>
+  <script src="third_party/OpenCV/opencv.js" type="text/javascript"></script>
+  <script src="third_party/fontdetect.js" type="text/javascript"></script>
+  <script src="js/romanwordbubbling.js" type="text/javascript"></script>
+</body>
